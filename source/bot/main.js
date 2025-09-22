@@ -1,13 +1,12 @@
 // imports
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
+const fs = require("fs");
 
 // variables
-const group_whitelist = [
-  "120363377880499372@g.us",
-  "120363379096537975@g.us",
-  "120363370702829195@g.us",
-];
+const group_whitelist = JSON.parse(
+  fs.readFileSync("source/Config/Groups.json", "utf8"),
+);
 
 // client setup
 const client = new Client({

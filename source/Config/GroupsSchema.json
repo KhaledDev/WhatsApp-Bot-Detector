@@ -1,0 +1,6 @@
+{
+    "_comment": "rename this file to Groups.json and add your group ids to the groups array",
+    "groups": [
+        "group id here"
+    ]
+}
