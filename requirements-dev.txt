@@ -3,3 +3,6 @@ keras
 uvicorn
 ollama
 pandas
+torch
+torchvision
+transformers
