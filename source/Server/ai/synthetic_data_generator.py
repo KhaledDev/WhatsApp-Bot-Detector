@@ -1,33 +1,42 @@
 import ollama
 import asyncio
 import pandas as pd
+import re
 
 
 SYSTEM_PROMPT = """
-Generate a set of messages for academic support services, including:
-Messages inviting students to join WhatsApp groups for homework help and discussion
-Messages offering research paper writing services with plagiarism guarantees
-Messages advertising academic writing services, including case studies, reports, and presentations
-Messages promoting university-specific groups for students to connect and share resources
+Generate a set of legitimate academic support messages in Arabic and English, including:
+Messages inviting students to join study groups for collaborative learning
+Messages promoting tutoring services with qualified instructors
+Messages advertising academic workshops on research methods and writing skills
+Messages promoting university library resources and study sessions
+Messages about academic counseling and guidance services
+
 Requirements:
-Include a mix of Arabic and English messages
-Use realistic but fictional WhatsApp links and phone numbers
-Mention Turnitin or similar plagiarism detection services
-Emphasize the benefits of the services, such as "expert guidance," "high-quality content," and "affordable prices"
+- Include ACTUAL Arabic text mixed with English (not romanized Arabic)
+- Use realistic Arabic phrases like: "مجموعة دراسية", "مساعدة أكاديمية", "طلاب الجامعة", "دروس خصوصية"
+- Mix languages naturally in the same message
+- Use realistic but fictional contact information
+- Focus on legitimate academic support that promotes learning and understanding
+
+Examples of desired style:
+"انضم إلى مجموعة دراسية للـ Math والـ Physics! WhatsApp: 050-123-4567"
+"دروس خصوصية في English Writing و Research Methods. اتصل الآن!"
+"مكتبة الجامعة تقدم study sessions مجانية كل يوم أحد"
+"Hello this account helps in exams, assignments, tests, homework and advanced projects at a good level in all subjects https://chat.whatsapp.com/BAe8QbR9qjG89tJ5AgymAY https://api.whatsapp.com/send?phone=+967736631021"
+""
+
+
+
 Format:
-Generate 10-20 messages in total
+Generate 15-20 messages in total
 Each message should be 1-2 sentences long
-Include a variety of message types, such as invitations to join WhatsApp groups, offers of research paper writing services, and promotions for academic writing services
+Include variety: some pure Arabic, some pure English, some mixed
+Focus on legitimate academic achievement and learning support
 
 Response Format:
-only provide the messages, at the end of each message include a ">" character to seperate each item
-
-Example Output:
-Here's an example of what the output might look like:
-"Need help with your math homework? Join our WhatsApp group for detailed solutions and expert guidance! https://chat.whatsapp.com/LpK83jR9qJg67tH5EzYdFb"
-"هل تحتاج إلى مساعدة في كتابة البحث الجامعي؟ كتابنا الخبراء يقدمون محتوى عالي الجودة مع صفر اقتباس. واتساب +971552219876"
-"Get professional help with case studies, reports, and presentations. Affordable prices, quick turnaround. Contact 0556273849"
-"طلاب جامعة الإمارات! انضموا إلى مجموعتنا لمناقشة مختلف التخصصات، مشاركة الملاحظات، والاستعداد للامتحانات! https://chat.whatsapp.com/KdF8sdf93jdF8sdf"
+ONLY provide the messages separated by ">", NO other text, commentary, explanations, or formatting.
+Each message must be complete and end with ">" before the next message starts.
 """
 
 
@@ -41,6 +50,29 @@ def generate_synthetic_data() -> str:
     return response.response
 
 
+def extract_messages(response: str) -> pd.DataFrame:
+    # Clean the response - remove extra whitespace and newlines
+    cleaned_response = re.sub(r"\s+", " ", response.strip())
+
+    # Split by '>' and clean each message
+    messages = []
+    for msg in cleaned_response.split(">"):
+        msg = msg.strip()
+        # Remove any quotes at the beginning/end
+        msg = re.sub(r'^["\'""]|["\'""]$', "", msg)
+        if msg and len(msg) > 10:  # Only include messages with reasonable length
+            messages.append(msg)
+
+    print(f"Extracted {len(messages)} messages:")
+    for i, msg in enumerate(messages, 1):
+        print(f"{i}: {msg[:50]}...")
+
+    return pd.DataFrame(messages, columns=["message"])
+
+
 if __name__ == "__main__":
     messages = generate_synthetic_data()
-    print(messages)
+    df = extract_messages(messages)
+    df.to_csv("source/Server/ai/Data/synthetic_academic_messages.csv", index=True)
+    print(f"\nFinal DataFrame shape: {df.shape}")
+    print(df.head())
