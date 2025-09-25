@@ -13,15 +13,13 @@ from transformers import (
 )
 
 
-def load_spam_dataset(location: str) -> DatasetDict:
-    dataset: DatasetDict | Dataset | IterableDatasetDict | IterableDataset = (
-        load_dataset("csv", data_files=location)
-    )
+def load_spam_dataset(location: str):
+    dataset = load_dataset("csv", data_files=location)
     return dataset
 
 
 def main():
-    dataset: DatasetDict = load_spam_dataset("source/Server/ai/Data/spam.csv")
+    dataset = load_spam_dataset("source/Server/ai/Data/spam.csv")
 
     # Split the dataset into train and test (80/20 split)
     train_test_split = dataset["train"].train_test_split(test_size=0.2, seed=42)

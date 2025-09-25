@@ -5,5 +5,5 @@ ollama
 pandas
 torch
 torchvision
-transformers
+transformers[torch]
 datasets
