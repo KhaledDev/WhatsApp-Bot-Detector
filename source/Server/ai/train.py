@@ -74,4 +74,4 @@ if __name__ == "__main__":
     print("Training completed successfully!")
     print(f"Model: {final_model}")
     # save the model to a directory
-    final_model.save_pretrained("source/Server/ai/Models/spam-detector")
+    final_model.save_pretrained("source/Server/ai/Models/Luna-1")

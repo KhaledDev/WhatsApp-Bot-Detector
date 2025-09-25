@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     classifier = pipeline(
         "text-classification",
-        model="source/Server/ai/Models/spam-detector",  # Use the saved model path
+        model="source/Server/ai/Models/Luna-1",  # Use the saved model path
         tokenizer="distilbert-base-uncased",  # Match the tokenizer used in training
         device=-1,  # -1 = CPU, 0 = GPU (if available)
     )
