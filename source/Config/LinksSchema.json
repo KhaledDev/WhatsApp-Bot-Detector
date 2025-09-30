@@ -1,0 +1,11 @@
+{
+    "_comment": "rename this file to Links.json and add your main link (github, google) to the links array",
+    "links" : [
+        "github",
+        "coursera",
+        "udemy",
+        "google",
+        "office",
+        "microsoft"
+    ]
+}

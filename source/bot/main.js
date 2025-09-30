@@ -1,13 +1,18 @@
 // imports
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
+var http = require("http");
 const fs = require("fs");
 
 // variables
 const group_whitelist = JSON.parse(
   fs.readFileSync("source/Config/Groups.json", "utf8"),
 );
+const links_whitelist = JSON.parse(
+  fs.readFileSync("source/Config/Links.json", "utf8"),
+);
 console.log(group_whitelist);
+console.log(links_whitelist);
 
 var msg_queue = []; // message queue so keep track of each message
 var awaiting_response = false; // flag to indicate if waiting for a response
@@ -30,7 +35,7 @@ client.on("qr", (qr) => {
 });
 
 client.on("message_create", (message) => {
-  console.log(message.from);
+  //console.log(message.from);
   if (group_whitelist.groups.includes(message.from)) {
     console.log(
       `Message from whitelisted group ${message.from}: ${message.body}`,
@@ -57,6 +62,21 @@ function removeEmojis(text) {
   );
 }
 
+function isLink(text) {
+  const urlRegex =
+    /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
+  return urlRegex.test(text);
+}
+
+function is_whitelisted_link(text) {
+  var is_link = isLink(text);
+  if (is_link) {
+    // Check if any of the whitelisted groups/domains are contained in the URL
+    return links_whitelist.links.some((domain) => text.includes(domain));
+  }
+  return false;
+}
+
 function processQueue() {
   if (msg_queue.length > 0 && !awaiting_response) {
     const message = msg_queue.shift();
@@ -65,6 +85,13 @@ function processQueue() {
     const cleaned_message = removeEmojis(
       convert_text_to_one_line(message.body),
     );
+
+    if (is_whitelisted_link(cleaned_message)) {
+      // dont send the message for inference if its a whitelisted link.
+      awaiting_response = false;
+      console.log(`Whitelisted link, skipping inference: ${message.body}`);
+      return;
+    }
 
     if (cleaned_message.length === 0 || cleaned_message == "") {
       awaiting_response = false;
@@ -104,6 +131,23 @@ function processQueue() {
 }
 
 queue_interval = setInterval(processQueue, 100); // process the queue every 100ms
+
+fs.readFile("source/bot/index.html", function (err, html) {
+  if (err) {
+    throw err;
+  }
+  var server = http
+    .createServer(function (request, response) {
+      response.writeHeader(200, { "Content-Type": "text/html" });
+      response.write(html);
+      response.end();
+    })
+    .listen(6969);
+
+  if (server.listening) {
+    console.log("web server started at http://localhost:6969");
+  }
+});
 
 // start the client
 client.initialize();
